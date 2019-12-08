@@ -468,8 +468,14 @@ typedef uint32_t BoolErr;
 #ifdef _WIN32
   // must compile with -std=gnu++11, not c++11, on 32-bit Windows since
   // otherwise fseeko64 not defined...
+#ifdef _MSC_VER
+#define fseeko _fseeki64
+#define ftello _ftelli64
+#else
 #  define fseeko fseeko64
 #  define ftello ftello64
+
+#endif
 #  define FOPEN_RB "rb"
 #  define FOPEN_WB "wb"
 #  define FOPEN_AB "ab"

@@ -128,12 +128,12 @@
 #endif
 
 #ifdef __LP64__
-#  ifndef __SSE2__
-    // todo: remove this requirement, the 32-bit VecW-using code does most of
-    // what we need
-#    error "64-bit builds currently require SSE2.  Try producing a 32-bit build instead."
+#  ifdef __x86_64__
+#    include <emmintrin.h>
+#  else
+#    define SIMDE_ENABLE_NATIVE_ALIASES
+#    include "x86/sse2.h"
 #  endif
-#  include <emmintrin.h>
 #  ifdef __SSE4_2__
 #    define USE_SSE42
 #    include <smmintrin.h>

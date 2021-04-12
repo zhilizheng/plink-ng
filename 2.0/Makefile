@@ -6,9 +6,12 @@
 
 # Does not currently support -DCPU_CHECK_...
 
-BASEFLAGS=-g -DZSTD_MULTITHREAD 
+# Specific setting for X86 cpu 
 # BASEFLAGS=-g -mavx2 -mbmi -mbmi2 -mlzcnt -DZSTD_MULTITHREAD
 # BASEFLAGS=-g -msse4.2 -DZSTD_MULTITHREAD
+
+# General setting for both ARM and x86 cpu
+BASEFLAGS=-g -DZSTD_MULTITHREAD
 
 include Makefile.src
 

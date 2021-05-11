@@ -6,9 +6,12 @@
 
 # Does not currently support -DCPU_CHECK_...
 
-BASEFLAGS=-g -mavx2 -mbmi -mbmi2 -mlzcnt -DZSTD_MULTITHREAD
+# Specific setting for X86 cpu 
+# BASEFLAGS=-g -mavx2 -mbmi -mbmi2 -mlzcnt -DZSTD_MULTITHREAD
 # BASEFLAGS=-g -msse4.2 -DZSTD_MULTITHREAD
-# BASEFLAGS=-g -DZSTD_MULTITHREAD
+
+# General setting for both ARM and x86 cpu
+BASEFLAGS=-g -DZSTD_MULTITHREAD
 
 include Makefile.src
 
@@ -18,14 +21,19 @@ CC		?= gcc
 CXX		?= g++
 CFLAGS		?= -O3
 CXXFLAGS	?= -O2
-ZLIB		?= ../zlib-1.2.11/libz-64.a
+ZLIB		?= -lz
+# ZLIB		?= -L. ../zlib-1.2.11/libz-64.a
+
+# dynamic zstd: remove -DSTATIC_ZSTD above, change this to -lzstd, replace
+# OBJ with OBJ_NO_ZSTD below
+ZSTD		?= -lzstd
 BLASFLAGS64	?= -llapack -lf77blas -latlas
 ARCH32		?=
 
 # Mandatory flags added to defaults or env settings
 CFLAGS		+= -std=gnu99 $(BASEFLAGS) $(CWARN) $(CINCLUDE)
-CXXFLAGS	+= -std=c++14 $(BASEFLAGS) $(CXXWARN)
-LDFLAGS		+= -lm -lpthread -L. $(ZLIB) -lzstd
+CXXFLAGS	+= -std=c++14 $(BASEFLAGS) $(CXXWARN) $(CXXINCLUDE)
+LDFLAGS		+= -lm -lpthread $(ZLIB) ${ZSTD}
 
 # Installation defaults
 MKDIR		?= mkdir
@@ -36,9 +44,12 @@ DESTDIR		?= .
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Darwin)
+  # argh
+  CFLAGS += -I/usr/local/include
+  CXXFLAGS += -I/usr/local/include
   BLASFLAGS=-framework Accelerate
   BLASFLAGS64=-framework Accelerate
-  LDFLAGS=-ldl -lpthread -lz -lzstd
+  LDFLAGS=-ldl -lpthread -lz -lzstd -L/usr/local/lib
 endif
 
 %.o: %.c
@@ -59,7 +70,7 @@ plink2: $(OBJ_NO_ZSTD)
 # basic pgenlib usage example; also needed for tests
 pgen_compress: $(PGCOBJ)
 	$(MKDIR) -p bin
-	$(CXX) $(PGCOBJ) \
+	$(CXX) ${CXXINCLUDE} $(PGCOBJ) \
 		-o bin/pgen_compress
 
 .PHONY: install-strip install clean
